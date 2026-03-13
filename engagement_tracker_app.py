@@ -810,7 +810,8 @@ with tab_reports:
                     next_t = times_min[i + 1] if i + 1 < len(times_min) else max_t
                     w      = max(1, round((next_t - t) / span * 100))
                     col    = ENGAGED_COL if e["engaged"] else NOT_COL
-                    segs  += f"<div class='bar-seg' style='width:{w}%;background:{col};' title='{e[\"entry_time\"][:5]}'></div>"
+                    etime  = e["entry_time"][:5]
+                    segs  += f"<div class='bar-seg' style='width:{w}%;background:{col};' title='{etime}'></div>"
                 tl_html = f"<div class='bar-wrap'>{segs}</div>"
                 min_lbl = f"{min_t//60}:{min_t%60:02d}"
                 max_lbl = f"{max_t//60}:{max_t%60:02d}"
@@ -995,12 +996,14 @@ with tab_reports:
                 day_summary["pct"] = (day_summary["eng"] / day_summary["tot"] * 100).round().astype(int)
                 traj_rows = ""
                 for d, row in day_summary.iterrows():
-                    pc = "grn" if row["pct"] >= 70 else ("amb" if row["pct"] >= 50 else "red")
-                    traj_rows += (f"<tr><td>{d.strftime('%a %-d %b %Y') if hasattr(d,'strftime') else d}</td>"
+                    d_lbl    = d.strftime('%a %-d %b %Y') if hasattr(d, 'strftime') else str(d)
+                    pct_val  = row['pct']
+                    pct_col2 = ENGAGED_COL if pct_val >= 70 else (AMBER if pct_val >= 50 else NOT_COL)
+                    traj_rows += (f"<tr><td>{d_lbl}</td>"
                                   f"<td style='text-align:center;'>{row['tot']}</td>"
                                   f"<td style='text-align:center;'>{row['eng']}</td>"
                                   f"<td style='text-align:center;'>{row['tot']-row['eng']}</td>"
-                                  f"<td style='text-align:center;font-weight:600;color:{ENGAGED_COL if row[\"pct\"]>=70 else (AMBER if row[\"pct\"]>=50 else NOT_COL)};'>{row['pct']}%</td></tr>")
+                                  f"<td style='text-align:center;font-weight:600;color:{pct_col2};'>{pct_val}%</td></tr>")
 
                 # Engagement rate trend (simple text trend)
                 rates = day_summary["pct"].tolist()
